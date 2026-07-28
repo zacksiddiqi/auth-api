@@ -69,4 +69,22 @@ router.post('/login', async (req, res) => {
     }
 });
 
+const authenticateToken = require('../middleware/auth');
+
+// GET /auth/me - protected route
+router.get('/me', authenticateToken, async(req, res) => {
+    try{ 
+        const [rows] = await pool.query(
+      'SELECT id, username, email, created_at FROM users WHERE id = ?',
+      [req.user.id]
+    );
+    if (rows.length === 0)
+      return res.status(404).json({ error: 'User not found' });
+
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
